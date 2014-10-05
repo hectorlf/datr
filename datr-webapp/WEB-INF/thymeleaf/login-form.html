@@ -1,0 +1,16 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="#{login}">Login</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+	<form action="#" method="post" th:action="@{/login.action}">
+		<p th:if="${param.error} != null" th:text="#{login.error}">No se ha podido iniciar la sesion</p>
+		<p><label for="username">User</label> <input type="text" name="username"/></p>
+		<p><label for="password">Password</label> <input type="text" name="password"/></p>
+		<p><input type="submit" name="Sign in" th:name="#{login}"/></p>
+	</form>
+	<p th:text="${#locale}">El locale que sea</p>
+</body>
+</html>
