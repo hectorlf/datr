@@ -11,13 +11,13 @@ public class ApplicationInitializerListener implements ServletContextListener {
 	private static final Logger logger = LoggerFactory.getLogger(ApplicationInitializerListener.class);
 
 	@Override
-	public void contextDestroyed(ServletContextEvent arg0) {
-		logger.debug("Shutting down application...");
+	public void contextInitialized(ServletContextEvent sce) {
+		logger.debug("Starting up application...");
 	}
 
 	@Override
-	public void contextInitialized(ServletContextEvent sce) {
-		logger.debug("Starting up application...");
+	public void contextDestroyed(ServletContextEvent sce) {
+		logger.debug("Shutting down application...");
 	}
 
 }

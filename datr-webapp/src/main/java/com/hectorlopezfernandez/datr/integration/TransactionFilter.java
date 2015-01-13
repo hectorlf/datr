@@ -9,12 +9,13 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
 import org.springframework.transaction.interceptor.TransactionAttribute;
@@ -47,38 +48,55 @@ public class TransactionFilter implements Filter {
 
 	private void doFirstTimeFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 		request.setAttribute(TRANSACTION_FILTER_MARKER_ATTRIBUTE, TRANSACTION_FILTER_MARKER_ATTRIBUTE);
+		// JPA transactionmanager
 		ApplicationContext ctx = ContextLoaderListener.getCurrentWebApplicationContext();
 		PlatformTransactionManager txManager = (PlatformTransactionManager)ctx.getBean("transactionManager");
 		TransactionAttribute def = new DefaultTransactionAttribute(TransactionDefinition.PROPAGATION_REQUIRED);
 		TransactionStatus tx = null;
+		// neo4j transactionmanager and threadlocal graphservice setup
+		GraphDatabaseService graphDb = (GraphDatabaseService)ctx.getBean("graphDatabaseService");
+		Transaction n4jTx = null;
+		// start transactions
 		try {
 			tx = txManager.getTransaction(def);
-		} catch(TransactionException txe) {
-			logger.error("FATAL: not able to start a transaction to service this request.");
-			throw new ServletException(txe);
+			n4jTx = graphDb.beginTx();
+		} catch(Exception e) {
+			logger.error("FATAL: not able to start the transactions to service this request. {} - {}", e.getClass().getSimpleName(), e.getMessage());
+			try { if (tx != null) tx.setRollbackOnly(); txManager.rollback(tx); } catch(Exception nte) {}
+			try { if (n4jTx != null) n4jTx.failure(); n4jTx.close(); } catch(Exception nte) {}
+			throw new ServletException(e);
 		}
 		try {
 			chain.doFilter(request, response);
 		} catch(Exception e) {
-			logger.error("Exception occurred servicing this request, rolling back the current transaction...");
-			try {
-				txManager.rollback(tx);
-			} catch(TransactionException txe) {
-				logger.error("Exception occurred rolling back the current transaction: " + txe.getMessage());
-			}
+			logger.error("Exception occurred servicing this request, rolling back the current transactions...");
+			tx.setRollbackOnly();
+			n4jTx.failure();
 			throw new ServletException(e);
 		} finally {
-			if (!tx.isCompleted()) {
-				try {
-					txManager.commit(tx);
-				} catch(TransactionException txe) {
-					logger.error("Exception occurred committing the current transaction: " + txe.getMessage());
-					throw new ServletException(txe);
-				}
+			try {
+				if (!tx.isCompleted() && !tx.isRollbackOnly()) { tx.flush(); }
+				n4jTx.success();
+			} catch(Exception e) {
+				logger.error("Exception occurred flushing the current transactions: {} - {}", e.getClass().getSimpleName(), e.getMessage());
+				tx.setRollbackOnly();
+				n4jTx.failure();
+				throw new ServletException(e);
+			} finally {
+				if (!tx.isCompleted() && tx.isRollbackOnly()) { try { txManager.rollback(tx); } catch(Exception e) {} try { n4jTx.close(); } catch(Exception e) {} }
+				else if (!tx.isCompleted() && !tx.isRollbackOnly()) {
+					// transactions should not fail here, but...
+					try { txManager.commit(tx); n4jTx.close(); } catch(Exception e) {
+						logger.error("Exception occurred committing transactions, rolling back: {} - {}", e.getClass().getSimpleName(), e.getMessage());
+						try { txManager.rollback(tx); } catch(Exception nte) {}
+						try { n4jTx.failure(); n4jTx.close(); } catch(Exception nte) {}
+					}
+				} else { try { n4jTx.close(); } catch(Exception e) { logger.error("Exception occurred closing neo4j tx while jpa tx was already completed: {} - {}", e.getClass().getSimpleName(), e.getMessage()); } }
 			}
 		}
 	}
 	private void doRecurringFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 		chain.doFilter(request, response);
 	}
+
 }

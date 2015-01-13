@@ -6,9 +6,11 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.hectorlopezfernandez.datr.dao.AuthDao;
+import com.hectorlopezfernandez.datr.dao.GraphDao;
 import com.hectorlopezfernandez.datr.dao.MetadataDao;
 import com.hectorlopezfernandez.datr.dao.UserDao;
 import com.hectorlopezfernandez.datr.dao.impl.AuthDaoImpl;
+import com.hectorlopezfernandez.datr.dao.impl.GraphDaoImpl;
 import com.hectorlopezfernandez.datr.dao.impl.MetadataDaoImpl;
 import com.hectorlopezfernandez.datr.dao.impl.UserDaoImpl;
 import com.hectorlopezfernandez.datr.service.AuthService;
@@ -30,6 +32,13 @@ public class AppConfiguration {
 		return ms;
 	}
 
+	// neo4j
+	
+	@Bean
+	public GraphServiceConfigurer graphServiceConfigurer() {
+		return new GraphServiceConfigurer();
+	}
+
 
 	// dao layer
 
@@ -46,6 +55,11 @@ public class AppConfiguration {
 	@Bean
 	public UserDao userDao() {
 		return new UserDaoImpl();
+	}
+	
+	@Bean
+	public GraphDao graphDao() {
+		return new GraphDaoImpl();
 	}
 
 	// service layer
