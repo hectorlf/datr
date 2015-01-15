@@ -6,12 +6,15 @@ buildscript {
       classpath "org.eclipse.persistence:javax.persistence:2.1.0"
       classpath "org.eclipse.persistence:org.eclipse.persistence.jpa:2.5.2"
       classpath "org.springframework.security:spring-security-core:3.2.5.RELEASE"
+      classpath "org.neo4j:neo4j-kernel:2.2.0-M02"
    }
 }
 
 
 dependencies {
    // some common dependencies are configured in the root build.gradle
+   
+   compile("org.neo4j:neo4j-kernel:")
 }
 
 

@@ -5,21 +5,15 @@ import java.util.Iterator;
 import javax.inject.Inject;
 
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 
 import com.hectorlopezfernandez.datr.integration.GraphServiceConfigurer;
+import com.hectorlopezfernandez.datr.model.NodeTypes;
+import com.hectorlopezfernandez.datr.model.RelationTypes;
 
 public abstract class BaseGraphDao {
-
-	private static enum RelTypes implements RelationshipType {
-	    LIKES
-	}
-	private static final Label userLabel = DynamicLabel.label("user");
 
 	private GraphDatabaseService gdbs;
 
@@ -31,12 +25,12 @@ public abstract class BaseGraphDao {
 	/* Utility methods */
 	
 	protected final boolean isARelatedToB(Long aId, Long bId) {
-		Node a = gdbs.findNode(userLabel, "id", aId);
+		Node a = gdbs.findNode(NodeTypes.USER, "id", aId);
 		if (a == null) return false;
-		Node b = gdbs.findNode(userLabel, "id", bId);
+		Node b = gdbs.findNode(NodeTypes.USER, "id", bId);
 		if (b == null) return false;
 
-		Iterator<Relationship> aRels = a.getRelationships(RelTypes.LIKES, Direction.OUTGOING).iterator();
+		Iterator<Relationship> aRels = a.getRelationships(RelationTypes.LIKES, Direction.OUTGOING).iterator();
 		while (aRels.hasNext()) {
 			Relationship r = aRels.next();
 			Node n = r.getEndNode();
