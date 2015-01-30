@@ -51,7 +51,7 @@ subprojects {
          } else if (details.requested.group == 'org.eclipse.persistence') {
             details.useVersion '2.5.2'
          } else if (details.requested.group == 'org.neo4j') {
-            details.useVersion '2.2.0-M02'
+            details.useVersion '2.2.0-M03'
          } else if (details.requested.group == 'org.mockito') {
             details.useVersion '1.10.19'
          }
