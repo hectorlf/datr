@@ -1,15 +1,3 @@
-buildscript {
-   repositories {
-      mavenCentral()
-      jcenter()
-   }
-   dependencies {
-      classpath "org.jboss.arquillian.gradle:arquillian-gradle-plugin:0.1"
-      classpath "org.apache.commons:commons-dbcp2:2.0.1"
-      classpath "org.hsqldb:hsqldb:2.3.2"
-   }
-}
-
 apply plugin: 'war'
 apply plugin: 'arquillian'
 

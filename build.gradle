@@ -1,3 +1,19 @@
+buildscript {
+   repositories {
+      mavenCentral()
+      jcenter()
+   }
+   dependencies {
+      classpath "org.eclipse.persistence:javax.persistence:2.1.0"
+      classpath "org.eclipse.persistence:org.eclipse.persistence.jpa:2.5.2"
+      classpath "org.springframework.security:spring-security-core:3.2.5.RELEASE"
+      classpath "org.neo4j:neo4j:2.2.0-M03"
+      classpath "org.jboss.arquillian.gradle:arquillian-gradle-plugin:0.1"
+      classpath "org.apache.commons:commons-dbcp2:2.0.1"
+      classpath "org.hsqldb:hsqldb:2.3.2"
+   }
+}
+
 subprojects {
    apply plugin: 'java'
 
@@ -9,6 +25,7 @@ subprojects {
 
    repositories {
       mavenCentral()
+      jcenter()
       flatDir { dirs '../lib' }
    }
 
