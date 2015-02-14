@@ -11,6 +11,7 @@ import javax.inject.Inject;
 
 import org.neo4j.cypher.ExecutionEngine;
 import org.neo4j.cypher.ExtendedExecutionResult;
+import org.neo4j.cypher.internal.spi.v2_2.DefaultLogger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -30,7 +31,7 @@ public abstract class BaseGraphDao {
 	@Inject
 	public void setGraphServiceConfigurer(GraphServiceConfigurer configurer) {
 		this.gdbs = configurer.get();
-		this.cypher = new ExecutionEngine(gdbs, StringLogger.DEV_NULL);
+		this.cypher = new ExecutionEngine(gdbs, new DefaultLogger(StringLogger.DEV_NULL));
 	}
 
 	/* Utility methods */
