@@ -9,15 +9,12 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.neo4j.cypher.ExecutionEngine;
-import org.neo4j.cypher.ExtendedExecutionResult;
-import org.neo4j.cypher.internal.spi.v2_2.DefaultLogger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
-import org.neo4j.kernel.impl.util.StringLogger;
+import org.neo4j.graphdb.Result;
 
 import com.hectorlopezfernandez.datr.integration.GraphServiceConfigurer;
 import com.hectorlopezfernandez.datr.model.NodeTypes;
@@ -26,12 +23,10 @@ import com.hectorlopezfernandez.datr.model.RelationTypes;
 public abstract class BaseGraphDao {
 
 	private GraphDatabaseService gdbs;
-	private ExecutionEngine cypher;
 
 	@Inject
 	public void setGraphServiceConfigurer(GraphServiceConfigurer configurer) {
 		this.gdbs = configurer.get();
-		this.cypher = new ExecutionEngine(gdbs, new DefaultLogger(StringLogger.DEV_NULL));
 	}
 
 	/* Utility methods */
@@ -81,8 +76,8 @@ public abstract class BaseGraphDao {
 		Map<String,Object> params = new HashMap<String,Object>(1);
 		params.put("userId", id);
 		params.put("maxNodes", maxNodes);
-		ExtendedExecutionResult result = cypher.execute("match (n:user{id:{userId}})<-[r:LIKES]-(m:user)-[r2:LIKES]->(t:user) where t <> n return distinct t, count(t) as num order by num desc limit {maxNodes}", params );
-		ResourceIterator<Node> nodes = result.javaColumnAs("t");
+		Result result = gdbs.execute("match (n:user{id:{userId}})<-[r:LIKES]-(m:user)-[r2:LIKES]->(t:user) where t <> n return distinct t, count(t) as num order by num desc limit {maxNodes}", params );
+		ResourceIterator<Node> nodes = result.columnAs("t");
 		if (!nodes.hasNext()) {
 			return Collections.emptyList();
 		}

@@ -17,8 +17,8 @@ public class DBConfig {
 	public DataSource dataSource() {
 		return new EmbeddedDatabaseBuilder()
 			.setType(EmbeddedDatabaseType.HSQL)
-			.addScript("classpath:test-db-ddl.sql")
-			.addScript("classpath:test-db-initial-data.sql")
+			.addScript("classpath:initial-ddl.sql")
+			.addScript("classpath:initial-data.sql")
 			.build();
 	}
 
